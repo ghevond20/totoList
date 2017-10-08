@@ -1,0 +1,40 @@
+.list {
+    height: 30px;
+    width: 250px;
+    background-color: lightskyblue;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    list-style: none;
+    /*text-align: center;*/
+    cursor: pointer;
+}
+
+.list > div{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+}
+
+.inputStyle {
+    height: 30px;
+    width: 200px;
+}
+
+.buttonStyle {
+    height: 35px;
+}
+
+button {
+    cursor: pointer;
+}
+
+.main {
+    display: flex;
+    justify-content: center;
+}
+
+ul {
+    padding-left: 0px;
+}
