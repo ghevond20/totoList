@@ -1,14 +1,20 @@
 import React, {Component} from 'react'
 import {Emitter} from '../lib/Emitter'
 import Counter from './Counter'
+import * as Constants from '../lib/Constants'
 
 export class List extends Component {
 	constructor(props) {
 		super(props);
 		this.state = {
 			items: [],
-			duplicate: [],
+			tempValue:'',
 			color: []
+			// duplicate: [
+			// 	{ids:[1,2,3],color:'#fff'},
+			// 	{ids:[4,8,16],color:'red'}
+			// ],
+
 
 		};
 	}
@@ -19,70 +25,60 @@ export class List extends Component {
 		Emitter.addListener('itemValueChange', this.itemValueChange.bind(this));
 	}
 
+	 setDefaultColor(indexList){
+		let color = this.state.color
+		indexList.forEach((index)=>{
+				color[index] = Constants.DEFAULT_COLOR
+		})
+		return color
+	 }
+
 	onEditItem = (item) => {
 		let items = this.state.items;
+		let color = this.state.color
+		let prevValue = this.state.items[item.index]
 		items[item.index] = item.value;
-		this.setState({items});
-		this.state.items.filter((itm, index) => {
-			if (items.lastIndexOf(itm) === index &&
-				items.indexOf(itm) !== index) {
-				if(items.lastIndexOf(itm) > items.indexOf(itm)){
-					this.setState((prevState, props) => {
-						let firstIndex = this.state.items.indexOf(itm);
-						let style = {};
-						if (firstIndex in prevState.color) {
-							style = prevState.color[firstIndex];
-						} else {
-							style = {backgroundColor: this.getRandomColor()};
-							prevState.color[firstIndex] = style;
-						}
-						prevState.color[index] = style;
-						return {color: prevState.color};
-					})
-				}else{
-					this.setState((prevState, props) => {
-						let firstIndex = this.state.items.lastIndexOf(itm);
-						let style = {};
-						if (firstIndex in prevState.color) {
-							style = prevState.color[firstIndex];
-						} else {
-							style = {backgroundColor: this.getRandomColor()};
-							prevState.color[firstIndex] = style;
-						}
-						prevState.color[index] = style;
-						return {color: prevState.color};
-					})
-				}
 
-			}
+		let hasEqual = this.checkUniqueItem(prevValue)
+		if(hasEqual.length < 3){
+			color = this.setDefaultColor(hasEqual);
+		}else{
+			color[item.index] = Constants.DEFAULT_COLOR
+		}
+	 	hasEqual = this.checkUniqueItem(item.value)
+		color = this.setDublicatetColors(color, hasEqual,item.index)
 
-		});
-
+		this.setState({items,color});
 	};
 
-	onAddNewItem = (newItem) => {
+	checkUniqueItem(value){
+		let equal = []
+		this.state.items.forEach((item, index)=>{
+				if(value === item){
+						equal.push(index)
+				}
+		})
+		return equal
+	}
 
-		let items = this.state.items;
-		items.push(newItem);
-		this.setState({items});
-		this.setState({duplicate: []});
-		this.state.items.filter((itm, index) => {
-			if (items.lastIndexOf(itm) === index &&
-				items.indexOf(itm) !== index) {
-				this.setState((prevState, props) => {
-					let firstIndex = this.state.items.indexOf(itm);
-					let style = {};
-					if (firstIndex in prevState.color) {
-						style = prevState.color[firstIndex];
-					} else {
-						style = {backgroundColor: this.getRandomColor()};
-						prevState.color[firstIndex] = style;
-					}
-					prevState.color[index] = style;
-					return {color: prevState.color};
-				})
+ 	setDublicatetColors(color, hasEqual, itemIndex){
+		if(hasEqual.length){
+			if(color[hasEqual[0]] ===  Constants.DEFAULT_COLOR){
+				color[hasEqual[0]] = this.getRandomColor()
 			}
-		});
+			color[itemIndex] = color[hasEqual[0]]
+		}
+		return color
+	}
+
+	onAddNewItem = (newItem) => {
+		let items = this.state.items;
+		let color = this.state.color;
+		let hasEqual = this.checkUniqueItem(newItem)
+		color[items.length] = Constants.DEFAULT_COLOR
+		color = this.setDublicatetColors(color, hasEqual, items.length)
+		items.push(newItem);
+		this.setState({items,tempValue:'',color});
 	};
 
 	getRandomColor() {
@@ -94,24 +90,9 @@ export class List extends Component {
 		return color;
 	}
 
-	itemValueChange = (val) => {
-
-		if (val === '') {
-			this.setState({duplicate: []});
-		} else {
-			this.state.items.map((item, index) => {
-				let d = '';
-				if (item === val) {
-					d = ' duplicate';
-				}
-				this.setState((prevState, props) => {
-					prevState.duplicate[index] = d;
-					return {duplicate: prevState.duplicate};
-				})
-			});
-		}
-
-	};
+	itemValueChange = (tempValue) => {
+		this.setState({tempValue})
+	}
 
 	removeItem(index) {
 		this.setState(prevState => ({
@@ -132,9 +113,8 @@ export class List extends Component {
 				<ul className=''>
 					{
 						this.state.items.map((item, index) => {
-							let duplicate = index in this.state.duplicate ? this.state.duplicate[index] : '';
-							let color = index in this.state.color ? this.state.color[index] : {};
-							return (<li key={index} className={`list${duplicate}`} style={color}>
+							let duplicate = this.state.tempValue === item ? ' duplicate' : '';
+							return (<li key={index} className={`list${duplicate}`} style={{backgroundColor: this.state.color[index]}}>
 								<div>
 									{item}
 									<button onClick={this.removeItem.bind(this, index)}>X</button>
