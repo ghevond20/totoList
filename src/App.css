@@ -10,6 +10,12 @@
     cursor: pointer;
 }
 
+.list.duplicate{
+    background: red !important;
+}
+
+
+
 .list > div{
     display: flex;
     align-items: center;

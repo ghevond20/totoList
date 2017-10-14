@@ -6,34 +6,43 @@ import {Emitter} from '../lib/Emitter'
 
 
 export class TodoList extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            editableItem: {}
-        };
-    }
-    componentWillMount(){
-      Emitter.addListener('onClickEditButton',this.onClickEditButton.bind(this))
-    }
+	constructor(props) {
+		super(props);
+		this.state = {
+			editableItem: {}
+		};
+	}
 
-    onClickEditButton(editableItem){
-      this.setState({editableItem})
-    }
+	componentWillMount() {
+		Emitter.addListener('onClickEditButton', this.onClickEditButton.bind(this))
+		Emitter.addListener('onEditItem', (v,i)=> {
+			this.setState({editableItem:{}})
+		});
+	}
 
-    getInputBox(){
-      if(Object.keys(this.state.editableItem).length){
-        return(<EditItem  value ={this.state.editableItem.value} index ={this.state.editableItem.index} />)
-      }else{
-        return(<AddNewItem />)
-      }
-    }
+	onClickEditButton(editableItem) {
+		this.setState({editableItem})
+	}
 
-    render() {
-      return (
-          <div>
-              {this.getInputBox()}
-              <List />
-          </div>
-      );
-    }
+	getInputBox() {
+
+			if (Object.keys(this.state.editableItem).length) {
+				return (<EditItem value={this.state.editableItem.value} index={this.state.editableItem.index}/>)
+			}
+			else {
+				return (<AddNewItem/>)
+			}
+
+
+	}
+
+	render() {
+		return (
+			<div>
+				{this.getInputBox()}
+				<List />
+
+			</div>
+		);
+	}
 }
